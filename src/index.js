@@ -12,19 +12,22 @@ class TweetMain extends React.Component {
 		this.state = {
 	      value: [],
 	      error: null,
-	      textvalue : "",	     
-	      isLoaded: false,
-	      hour: "2019-03-27T05:26:56.828Z",
+	      textvalue : "",   
+	      isLoaded: false,	      
+	      objeto: {},
 	    }
     this.agregarTweet = this.agregarTweet.bind(this)
     this.handleChange = this.handleChange.bind(this)      
 	}
 
 	componentDidMount(){
+
 		fetch("https://still-garden-88285.herokuapp.com/draft_tweets")
 			.then(res => res.json())
 			.then(
 				(result) => {
+					console.log("ESTE ES EL GET");
+					console.log(result);
 				let newTweets = this.state.value.slice();
 					this.setState({
 						isLoaded: true,
@@ -40,26 +43,50 @@ class TweetMain extends React.Component {
 			)
 	}
 
+
+
 	handleChange(e) {
 	    this.setState({
 	      textvalue:e.target.value
-	    })
-	    let hourTweet = new Date().toLocaleTimeString();	
-		console.log(hourTweet);	
-		this.setState({hour: hourTweet});
-	}	
+	    })	    
+	}		
 	
 	agregarTweet() {
 		let tweet = {
 			avatar : "https://upload.wikimedia.org/wikipedia/commons/5/58/Shiba_inu_taiki.jpg",
 			user_name : "FranciscoDelgado",
-			description : this.state.textvalue,
-			created_at : this.state.hour,
+			description : this.state.textvalue,			
 		}
-	    this.state.value.push(tweet)
-	    this.setState(
-	      this.state
-	    )	    
+		    
+	    let headers = {};
+		headers['Content-Type'] = 'application/json';
+
+		const options = {
+			headers: headers,
+			method: 'POST',
+			body: JSON.stringify(tweet),
+		}
+
+		fetch("https://still-garden-88285.herokuapp.com/draft_tweets", options)
+			.then(res => res.json())
+			.then(
+				(result) => {
+
+					console.log("ESTE ES EL POST");
+					console.log(result);
+				let newTweets = this.state.value.slice();
+					this.setState({
+						isLoaded: true,
+						value: newTweets.concat(result.draft_tweet) 
+					});
+				},
+				(error) => {
+					this.setState({
+						isLoaded: true,
+						error:error
+					});
+				}
+			)
 	} 
 
 
@@ -67,7 +94,7 @@ class TweetMain extends React.Component {
 	render(){
 		let { value, error, isLoaded } = this.state;
 		let content;
-		console.log(value)
+		
 
 		if(error){			
 			content = <div>Error: {error.message}</div>		
@@ -78,7 +105,7 @@ class TweetMain extends React.Component {
 
 		else content = value.map((v, index) => {
 			          return <div className="perfilTweet" key={index}>
-			          {console.log(v)}
+			          
 			          <TweetBody foto={v.avatar} nom={v.user_name} hour={v.created_at}></TweetBody><h1 className="texto">{v.description}</h1>
 			          </div>			          
 		})
@@ -110,7 +137,7 @@ class Tweet extends React.Component{
 		}
 		else content = this.props.value.map((v, index) => {
 			          return <div className="perfilTweet" key={index}>
-			          {console.log(v)}
+			          
 			          <TweetBody foto={v.avatar} nom={v.user_name} hour={v.created_at}></TweetBody><h1 className="texto">{v.description}</h1>
 			          </div>			          
 		})
